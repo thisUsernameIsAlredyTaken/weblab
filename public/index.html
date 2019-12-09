@@ -5,7 +5,6 @@
     <title>Title</title>
     <style>
         #fld {
-            /*border: 1px solid black;*/
             padding: 0;
             border-spacing: 0;
             border-top: 1px solid black;
@@ -27,7 +26,6 @@
     </style>
 </head>
 <body>
-<!--<canvas id="ctx" width="500" height="500" style="border: 1px solid black;"></canvas>-->
 <table id="fld">
     <tr>
         <td></td>
@@ -151,64 +149,51 @@
     </tr>
 </table>
 <hr>
+<p id="status"></p>
 <button id="btn"></button>
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
 <script>
-    let btn = document.getElementById('btn');
+    let button = document.getElementById('btn');
     let table = document.getElementById('fld').firstElementChild.children;
+    let status = document.getElementById('status');
     let field = [];
-    table.childNodes
     let socket = io();
 
-    socket.on('connect', function () {
-    });
-
+    // build field 2d array for comfort access
     for (let i = 0; i < 10; i++) {
         field[i] = [];
         let row = table[i].children;
         for (let j = 0; j < 10; j++) {
             field[i][j] = row[j];
             field[i][j].onclick = function () {
-                socket.emit('turn', {x: j, y: i});
+                socket.emit('turn', {col: j, row: i});
             }
         }
     }
-    socket.on('redraw', function (data) {
+
+    socket.on('tick', function (data) {
         for (let i = 0; i < 10; i++) {
             for (let j = 0; j < 10; j++) {
-                switch (data.field[i][j]) {
-                    case 'X':
-                        field[i][j].textContent = 'X';
-                        break;
-                    case 'O':
-                        field[i][j].textContent = 'O';
-                        break;
-                    default:
-                        field[i][j].textContent = '';
-                }
+                field[i][j].textContent = data.field[i][j];
             }
         }
-    });
-
-    socket.on('init', function (data) {
+        status.textContent = data.status;
+        button.textContent = data.buttonText;
+        button.hidden = (data.buttonText === '');
         switch (data.activePlayers) {
             case 0:
-                btn.textContent = 'Start new game';
-                btn.onclick = function () {
+                button.onclick = function () {
                     socket.emit('new_game', {});
                 };
                 break;
             case 1:
-                btn.textContent = 'Connect to game';
-                btn.onclick = function () {
+                button.onclick = function () {
                     socket.emit('connect_game', {});
                 };
                 break;
-            default:
-                btn.hidden = true;
-                break;
         }
     });
+
 </script>
 </html>
