@@ -148,24 +148,49 @@
         <td></td>
     </tr>
 </table>
+<p id="status"></p>
 <hr>
 <button id="pass_button">PASS</button>
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
+<script src="game.js"></script>
 <script>
+let field = [];
+let rows = document.getElementById('game_field').children.item(0).children;
+for (let i = 0; i < 10; i++) {
+    field[i] = [];
+    let row = rows.item(i).children;
+    for (let j = 0; j < 10; j++) {
+        field[i][j] = row.item(j);
+    }
+}
+let passButton = document.getElementById('pass_button');
 
-    let socket = io();
-    // build field 2d array for comfort access
+let game = new Game();
+
+setInterval(function () {
     for (let i = 0; i < 10; i++) {
-        field[i] = [];
-        let row = table[i].children;
         for (let j = 0; j < 10; j++) {
-            field[i][j] = row[j];
-            field[i][j].onclick = function () {
-                socket.emit('turn', {col: j, row: i});
-            }
+            field[i][j].textContent = game.getField(i, j);
         }
     }
+}, 250);
+
+passButton.onclick = function() {
+    let f = game.pass();
+    console.log(f);
+};
+for (let i = 0; i < 10; i++) {
+    for (let j = 0; j < 10; j++) {
+        field[i][j].onclick = function () {
+            let f = game.turn(i, j);
+            console.log([f, i, j]);
+        }
+    }
+}
+
+
+
 
 </script>
 </html>

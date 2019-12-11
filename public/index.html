@@ -9,12 +9,9 @@
 <button id="btn"></button>
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
+<script src="../script/server/server.js"></script>
 <script>
-    let socket = io();
-
-    socket.on('redirect_game', function () {
-        window.location.replace('game.html');
-    });
+    window.location.replace('game.html');
 
 </script>
 </html>
