@@ -6,35 +6,7 @@ function Game(gameEndedCallback) {
     const O_KILLED = 'X';
     const EMPTY = '';
 
-    this.isAvailable = function (player, row, col) {
-        return isAvailable(player, row, col);
-    };
-
-    this.isAnyAvailable = function (player) {
-        return isAnyAvailableTurn(player);
-    };
-
-    this.getGraph = function (pl) {
-        if (pl === X) {
-            return xGraph;
-        } else {
-            return oGraph;
-        }
-    };
-
-    this.findPath = function (start, end) {
-        let gr;
-        switch (getField((start - start % 10) / 10, start % 10)) {
-            case X:
-                gr = xGraph;
-                break;
-            case O:
-                gr = oGraph;
-                break;
-        }
-        return findPath(gr, start, end);
-    };
-
+    // API
     this.turn = function(row, col) {
         let enemy = currentPlayer === X ? O : X;
         let killed = enemy === X ? X_KILLED : O_KILLED;
@@ -59,20 +31,23 @@ function Game(gameEndedCallback) {
         return true;
     };
 
-    this.getCurrentPlayer = function() {
-        return currentPlayer;
-    };
-
-    this.isGameEnded = function() {
-        return gameEnded;
-    };
-
     this.getField = function(row, col) {
         return field[row][col];
     };
 
+    this.getStartTime = function() {
+        return startTime;
+    };
+
+    this.getEndTime = function() {
+        return endTime;
+    };
+
     // Update field
     let setField = function(row, col, e) {
+        if (gameEnded) {
+            return;
+        }
         switch (getField(row, col)) {
             case X:
                 xCount -= 1;
@@ -133,10 +108,8 @@ function Game(gameEndedCallback) {
             if (getField(e[0], e[1]) === killed) {
                 for (let i = 0; i < 10; i++) {
                     for (let j = 0; j < 10; j++) {
-                        if (getField(i, j) === currentPlayer) {
+                        if (getField(i, j) === player) {
                             if (findPath(graph, e[0] * 10 + e[1], i * 10 + j)) {
-                                console.log('path Finded')
-                                console.log([e[0], e[1]], [i, j]);
                                 return true;
                             }
                         }
@@ -175,11 +148,15 @@ function Game(gameEndedCallback) {
         currentPlayer = currentPlayer === X ? O : X;
     };
 
-    let endGame = function(w) {
+    let endGame = function(winner) {
         endTime = Date.now();
         gameEnded = true;
-        winner = w;
-        gameEndedCallback(winner);
+        gameEndedCallback({
+            winner: winner,
+            startTime: startTime,
+            endTime: endTime,
+            turnCount: turnCount
+        });
     };
 
     let aroundIndexes = function(row, col) {
@@ -201,16 +178,6 @@ function Game(gameEndedCallback) {
         return res;
     };
 
-    this.buildGraph = function(player) {
-        let gr = [];
-        for (let i = 0; i < 100; i++) {
-            gr[i] = [];
-            for (let j = 0; j < 100; j++) {
-                gr[i][j] = false;
-            }
-        }
-        return buildGraph(player, gr);
-    };
     let buildGraph = function(player, graph) {
         let killed = player === X ? O_KILLED : X_KILLED;
 
@@ -280,7 +247,6 @@ function Game(gameEndedCallback) {
 
     let startTime = Date.now();
     let endTime = undefined;
-    let winner = EMPTY;
     let gameEnded = false;
     let lastTurnPass = false;
     let currentPlayer = X;
@@ -307,32 +273,32 @@ function Game(gameEndedCallback) {
     }
 }
 
-function printGraph(gr, ctx) {
-    ctx.clearRect(0, 0, 500, 500);
-    let d = 500 / 11;
-    for (let i=0;i<10;i++){
-        for(let j=0;j<10;j++){
-            ctx.beginPath();
-            ctx.arc(d * j + d, d * i + d, 4, 0, 2*Math.PI);
-            ctx.fill();
-            ctx.closePath();
-        }
-    }
-    for(let i=0;i<100;i++) {
-        for(let j =i;j<100;j++){
-            if (gr[i][j]) {
-                let j1 = i % 10;
-                let i1 = (i - j1) / 10;
-                let j2 = j % 10;
-                let i2 = (j - j2) / 10;
-                ctx.moveTo( j1*d+d, i1*d+d);
-                ctx.lineTo(j2*d+d, i2*d+d);
-                ctx.stroke();
-                ctx.closePath();
-            }
-        }
-    }
-}
+// function printGraph(gr, ctx) {
+//     ctx.clearRect(0, 0, 500, 500);
+//     let d = 500 / 11;
+//     for (let i=0;i<10;i++){
+//         for(let j=0;j<10;j++){
+//             ctx.beginPath();
+//             ctx.arc(d * j + d, d * i + d, 4, 0, 2*Math.PI);
+//             ctx.fill();
+//             ctx.closePath();
+//         }
+//     }
+//     for(let i=0;i<100;i++) {
+//         for(let j =i;j<100;j++){
+//             if (gr[i][j]) {
+//                 let j1 = i % 10;
+//                 let i1 = (i - j1) / 10;
+//                 let j2 = j % 10;
+//                 let i2 = (j - j2) / 10;
+//                 ctx.moveTo( j1*d+d, i1*d+d);
+//                 ctx.lineTo(j2*d+d, i2*d+d);
+//                 ctx.stroke();
+//                 ctx.closePath();
+//             }
+//         }
+//     }
+// }
 
 // It Works !!! A*
 // function findPath(graph, start, end) {

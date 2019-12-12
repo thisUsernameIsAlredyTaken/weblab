@@ -168,7 +168,10 @@ for (let i = 0; i < 10; i++) {
 let ctx = document.getElementById('canvas').getContext('2d');
 let passButton = document.getElementById('pass_button');
 
-let game = new Game(winner=>{alert('game ended, winner: ' + winner)});
+let game = new Game(data=>{
+    alert('game ended, data: ' + data);
+    console.log(data)
+});
 
 setInterval(function () {
     for (let i = 0; i < 10; i++) {
@@ -189,38 +192,6 @@ for (let i = 0; i < 10; i++) {
         }
     }
 }
-//
-//
-// game.turn(9, 0);
-// game.turn(9, 1);
-// game.turn(9, 2);
-//
-// game.turn(0, 9);
-// game.turn(0, 8);
-// game.turn(1, 9);
-// let k = 0;
-// for (let i = 9; i >= 0; i--) {
-//     for (let j = 0; j < 10; j++) {
-//         if (game.getField(i, j) === '') {
-//             game.turn(i, j);
-//             k += 1;
-//             if (k === 3) {
-//                 k = 0;
-//                 game.pass();
-//             }
-//         }
-//     }
-// }
-//
-// game.turn(0, 8);
-// game.turn(1, 9);
-// game.turn(1, 8);
-// game.turn(0, 7);
-// game.turn(2, 9);
-// game.pass();
-// game.turn(1, 7);
-// game.turn(2, 7);
-// game.turn(2, 8);
 
 
 </script>
