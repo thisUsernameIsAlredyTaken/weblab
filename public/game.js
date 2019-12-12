@@ -214,6 +214,11 @@ function Game(gameEndedCallback) {
     let buildGraph = function(player, graph) {
         let killed = player === X ? O_KILLED : X_KILLED;
 
+        for (let i = 0; i < 100; i++) {
+            for (let j = 0; j < 100; j++) {
+                graph[i][j] = false;
+            }
+        }
         for (let i = 0; i < 10; i++) {
             for (let j = 0; j < 10; j++) {
                 if (field[i][j] === player || field[i][j] === killed) {
