@@ -166,7 +166,7 @@ for (let i = 0; i < 10; i++) {
 }
 let passButton = document.getElementById('pass_button');
 
-let game = new Game();
+let game = new Game(winner=>alert('game ended, winner: ' + winner));
 
 setInterval(function () {
     for (let i = 0; i < 10; i++) {
@@ -190,6 +190,26 @@ for (let i = 0; i < 10; i++) {
 }
 
 
+game.turn(9, 0);
+game.turn(9, 1);
+game.turn(9, 2);
+
+game.turn(0, 9);
+game.turn(0, 8);
+game.turn(1, 9);
+let k = 0;
+for (let i = 9; i >= 0; i--) {
+    for (let j = 0; j < 10; j++) {
+        if (game.getField(i, j) === '') {
+            game.turn(i, j);
+            k += 1;
+            if (k === 3) {
+                k = 0;
+                game.pass();
+            }
+        }
+    }
+}
 
 
 </script>

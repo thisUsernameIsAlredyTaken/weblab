@@ -1,4 +1,4 @@
-function Game() {
+function Game(gameEndedCallback) {
     // Const
     const X = 'x';
     const O = 'o';
@@ -6,14 +6,39 @@ function Game() {
     const O_KILLED = 'X';
     const EMPTY = '';
 
-    this.isAvailable = function (row, col) {
-        return isAvailable(row, col);
+    this.isAvailable = function (player, row, col) {
+        return isAvailable(player, row, col);
+    };
+
+    this.isAnyAvailable = function (player) {
+        return isAnyAvailableTurn(player);
+    };
+
+    this.getGraph = function (pl) {
+        if (pl === X) {
+            return xGraph;
+        } else {
+            return oGraph;
+        }
+    };
+
+    this.findPath = function (start, end) {
+        let gr;
+        switch (getField((start - start % 10) / 10, start % 10)) {
+            case X:
+                gr = xGraph;
+                break;
+            case O:
+                gr = oGraph;
+                break;
+        }
+        return findPath(gr, start, end);
     };
 
     this.turn = function(row, col) {
         let enemy = currentPlayer === X ? O : X;
         let killed = enemy === X ? X_KILLED : O_KILLED;
-        if (isAvailable(row, col)) {
+        if (isAvailable(currentPlayer, row, col)) {
             if (getField(row, col) === enemy) {
                 setField(row, col, killed);
             } else {
@@ -46,7 +71,30 @@ function Game() {
         return field[row][col];
     };
 
+    // Update field
     let setField = function(row, col, e) {
+        switch (getField(row, col)) {
+            case X:
+                xCount -= 1;
+                if (xCount === 0) {
+                    endGame(O);
+                }
+                break;
+            case O:
+                oCount -= 1;
+                if (oCount === 0) {
+                    endGame(X);
+                }
+                break;
+        }
+        switch (e) {
+            case X:
+                xCount += 1;
+                break;
+            case O:
+                oCount += 1;
+                break;
+        }
         field[row][col] = e;
         // Update graphs
         xGraph = buildGraph(X, xGraph);
@@ -57,21 +105,27 @@ function Game() {
         return field[row][col];
     };
 
-    let isAvailable = function(row, col) {
-        let enemy = currentPlayer === X ? O : X;
-        let killed = currentPlayer === X ? O_KILLED : X_KILLED;
+    let isAvailable = function(player, row, col) {
+        if (xCount === 0 && player === X) {
+            return row === 9 && col === 0 && getField(row, col) === EMPTY;
+        }
+        if (oCount === 0 && player === O) {
+            return row === 0 && col === 9 && getField(row, col) === EMPTY;
+        }
+        let enemy = player === X ? O : X;
+        let killed = player === X ? O_KILLED : X_KILLED;
         if (getField(row, col) !== enemy && getField(row, col) !== EMPTY) {
             return false;
         }
         let graph;
-        if (currentPlayer === X) {
+        if (player === X) {
             graph = xGraph;
         } else {
             graph = oGraph;
         }
         let around = aroundIndexes(row, col);
         for (let e of around) {
-            if (getField(e[0], e[1]) === currentPlayer) {
+            if (getField(e[0], e[1]) === player) {
                 return true;
             }
         }
@@ -91,10 +145,10 @@ function Game() {
         return false;
     };
 
-    let isAnyAvailableTurn = function() {
+    let isAnyAvailableTurn = function(player) {
         for (let i = 0; i < 10; i++) {
             for (let j = 0; j < 10; j++) {
-                if (isAvailable(i, j)) {
+                if (isAvailable(player, i, j)) {
                     return true;
                 }
             }
@@ -104,14 +158,14 @@ function Game() {
 
     let endSubTurn = function() {
         subTurnCount += 1;
-        if (subTurnCount === 3 || !isAnyAvailableTurn()) {
+        if (subTurnCount === 3 || !isAnyAvailableTurn(currentPlayer)) {
             endTurn(false);
         }
     };
 
     let endTurn = function(isPass) {
         if (lastTurnPass && isPass) {
-            endGame();
+            endGame(EMPTY); // Draw
         }
         turnCount += 1;
         subTurnCount = 0;
@@ -119,8 +173,11 @@ function Game() {
         currentPlayer = currentPlayer === X ? O : X;
     };
 
-    let endGame = function() {
+    let endGame = function(w) {
+        endTime = Date.now();
         gameEnded = true;
+        winner = w;
+        gameEndedCallback(winner);
     };
 
     let aroundIndexes = function(row, col) {
@@ -142,6 +199,16 @@ function Game() {
         return res;
     };
 
+    this.buildGraph = function(player) {
+        let gr = [];
+        for (let i = 0; i < 100; i++) {
+            gr[i] = [];
+            for (let j = 0; j < 100; j++) {
+                gr[i][j] = false;
+            }
+        }
+        return buildGraph(player, gr);
+    };
     let buildGraph = function(player, graph) {
         let killed = player === X ? O_KILLED : X_KILLED;
 
@@ -149,7 +216,7 @@ function Game() {
             for (let j = 0; j < 10; j++) {
                 if (field[i][j] === player || field[i][j] === killed) {
                     aroundIndexes(i, j).forEach(e => {
-                        if (field[e[0]][e[1]] === player || field[i][j] === killed) {
+                        if (field[e[0]][e[1]] === player || field[e[0]][e[1]] === killed) {
                             let ind1 = i * 10 + j;
                             let ind2 = e[0] * 10 + e[1];
                             graph[ind1][ind2] = true;
@@ -204,13 +271,16 @@ function Game() {
         return false;
     };
 
+    let startTime = Date.now();
+    let endTime = undefined;
+    let winner = EMPTY;
     let gameEnded = false;
     let lastTurnPass = false;
     let currentPlayer = X;
     let turnCount = 0;
-    let subTurnCount = 1;
-    let xCount = 1;
-    let oCount = 1;
+    let subTurnCount = 0;
+    let xCount = 0;
+    let oCount = 0;
     let field = [];
     for (let i = 0; i < 10; i++) {
         field[i] = [];
@@ -228,8 +298,6 @@ function Game() {
             oGraph[i][j] = false;
         }
     }
-    setField(9, 0, X);
-    setField(0, 9, O);
 }
 
 // It Works !!! A*
