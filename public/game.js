@@ -135,6 +135,8 @@ function Game(gameEndedCallback) {
                     for (let j = 0; j < 10; j++) {
                         if (getField(i, j) === currentPlayer) {
                             if (findPath(graph, e[0] * 10 + e[1], i * 10 + j)) {
+                                console.log('path Finded')
+                                console.log([e[0], e[1]], [i, j]);
                                 return true;
                             }
                         }
@@ -296,6 +298,33 @@ function Game(gameEndedCallback) {
         for (let j = 0; j < 100; j++) {
             xGraph[i][j] = false;
             oGraph[i][j] = false;
+        }
+    }
+}
+
+function printGraph(gr, ctx) {
+    ctx.clearRect(0, 0, 500, 500);
+    let d = 500 / 11;
+    for (let i=0;i<10;i++){
+        for(let j=0;j<10;j++){
+            ctx.beginPath();
+            ctx.arc(d * j + d, d * i + d, 4, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.closePath();
+        }
+    }
+    for(let i=0;i<100;i++) {
+        for(let j =i;j<100;j++){
+            if (gr[i][j]) {
+                let j1 = i % 10;
+                let i1 = (i - j1) / 10;
+                let j2 = j % 10;
+                let i2 = (j - j2) / 10;
+                ctx.moveTo( j1*d+d, i1*d+d);
+                ctx.lineTo(j2*d+d, i2*d+d);
+                ctx.stroke();
+                ctx.closePath();
+            }
         }
     }
 }
