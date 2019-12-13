@@ -89,6 +89,11 @@ function Game(gameEndedCallback) {
                 break;
         }
         field[row][col] = e;
+        if (field[0][9] === X) {
+            endGame(X);
+        } else if (field[9][0] === O) {
+            endGame(O);
+        }
         // Update graphs
         xGraph = buildGraph(X, xGraph);
         oGraph = buildGraph(O, oGraph);
@@ -158,12 +163,15 @@ function Game(gameEndedCallback) {
 
     let endTurn = function(isPass) {
         turnCount += 1;
+        currentPlayer = currentPlayer === X ? O : X;
+        subTurnCount = 0;
+        //if (!isAnyAvailableTurn(currentPlayer)) {
+            //endGame(currentPlayer === X ? O : X);
+        //}
         if (lastTurnPass && isPass) {
             endGame(EMPTY); // Draw
         }
-        subTurnCount = 0;
         lastTurnPass = isPass;
-        currentPlayer = currentPlayer === X ? O : X;
     };
 
     let endGame = function(winner) {
