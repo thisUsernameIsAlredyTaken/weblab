@@ -1,11 +1,11 @@
-function Game(gameEndedCallback) {
-    // Const
-    const X = 'x';
-    const O = 'o';
-    const X_KILLED = 'O';
-    const O_KILLED = 'X';
-    const EMPTY = '';
+// Const
+const X = 'x';
+const O = 'o';
+const X_KILLED = 'O';
+const O_KILLED = 'X';
+const EMPTY = '';
 
+function Game(gameEndedCallback) {
     // API
     this.turn = function(row, col) {
         let enemy = currentPlayer === X ? O : X;
@@ -33,6 +33,10 @@ function Game(gameEndedCallback) {
 
     this.getField = function(row, col) {
         return field[row][col];
+    };
+
+    this.getCurrentPlayer = function () {
+        return currentPlayer;
     };
 
     this.getStartTime = function() {
@@ -273,117 +277,11 @@ function Game(gameEndedCallback) {
     }
 }
 
-// function printGraph(gr, ctx) {
-//     ctx.clearRect(0, 0, 500, 500);
-//     let d = 500 / 11;
-//     for (let i=0;i<10;i++){
-//         for(let j=0;j<10;j++){
-//             ctx.beginPath();
-//             ctx.arc(d * j + d, d * i + d, 4, 0, 2*Math.PI);
-//             ctx.fill();
-//             ctx.closePath();
-//         }
-//     }
-//     for(let i=0;i<100;i++) {
-//         for(let j =i;j<100;j++){
-//             if (gr[i][j]) {
-//                 let j1 = i % 10;
-//                 let i1 = (i - j1) / 10;
-//                 let j2 = j % 10;
-//                 let i2 = (j - j2) / 10;
-//                 ctx.moveTo( j1*d+d, i1*d+d);
-//                 ctx.lineTo(j2*d+d, i2*d+d);
-//                 ctx.stroke();
-//                 ctx.closePath();
-//             }
-//         }
-//     }
-// }
-
-// It Works !!! A*
-// function findPath(graph, start, end) {
-//     function h(start, end) {
-//         let startI = start / 10;
-//         let startJ = start % 10;
-//         let endI = end / 10;
-//         let endJ = end % 10;
-//         return Math.abs(startI - endI) + Math.abs(startJ - endJ);
-//     }
-//     let closed = [];
-//     let open = [start];
-//     let from = {};
-//     let g = [];
-//     let f = [];
-//     g[start] = 0;
-//     f[start] = g[start] + h(start, end);
-//     while (open.length > 0) {
-//         let curr = open[0];
-//         if (curr === end)
-//             return true;
-//         open.splice(open.indexOf(curr), 1);
-//         closed.push(curr);
-//         let neighbours = [];
-//         for (let i = 0; i < 100; i++) {
-//             if (graph[curr][i] && closed.indexOf(i) === -1) {
-//                 neighbours.push(i);
-//             }
-//         }
-//         neighbours.forEach(elem => {
-//             let tmpG = g[curr] + 1;
-//             if (open.indexOf(elem) === -1 || tmpG < g[elem]) {
-//                 from[elem] = curr;
-//                 g[curr] = tmpG;
-//                 f[elem] = g[elem] + h(elem, end);
-//             }
-//             if (open.indexOf(elem) === -1) {
-//                 open.push(elem);
-//             }
-//         });
-//     }
-//     return false;
-// }
-//
-// function aroundIndexes(row, col) {
-//     let inx = [];
-//     inx[0] = [row - 1, col - 1];
-//     inx[1] = [row - 1, col];
-//     inx[2] = [row - 1, col + 1];
-//     inx[3] = [row, col - 1];
-//     inx[4] = [row, col + 1];
-//     inx[5] = [row + 1, col - 1];
-//     inx[6] = [row + 1, col];
-//     inx[7] = [row + 1, col + 1];
-//     let res = [];
-//     for (let i = 0; i < 8; i++) {
-//         if (!(inx[i][0] < 0 || inx[i][0] > 9 || inx[i][1] < 0 || inx[i][1] > 9)) {
-//             res.push(inx[i]);
-//         }
-//     }
-//     return res;
-// }
-//
-// function buildGraph(matrix) {
-//     let graph = [];
-//     for (let i = 0; i < 100; i++) {
-//         graph[i] = [];
-//         for (let j = 0; j < 100; j++) {
-//             graph[i][j] = false;
-//         }
-//     }
-//
-//     for (let i = 0; i < 10; i++) {
-//         for (let j = 0; j < 10; j++) {
-//             if (matrix[i][j] === 2) {
-//                 aroundIndexes(i, j).forEach(e => {
-//                     if (matrix[e[0]][e[1]] === 2) {
-//                         let ind1 = i * 10 + j;
-//                         let ind2 = e[0] * 10 + e[1];
-//                         graph[ind1][ind2] = true;
-//                         graph[ind2][ind1] = true;
-//                     }
-//                 });
-//             }
-//         }
-//     }
-//     return graph;
-// }
+module.exports = {
+    X: X,
+    O: O,
+    X_KILLED: X_KILLED,
+    O_KILLED: O_KILLED,
+    EMPTY: EMPTY,
+    Game: Game
+};

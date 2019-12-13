@@ -4,26 +4,28 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <style>
-    #game_field {
-        padding: 0;
-        border-spacing: 0;
-        border-top: 1px solid black;
-        border-left: 1px solid black;
-    }
-    #game_field tr {
-        padding: 0;
-        margin: 0;
-    }
-    #game_field tr td {
-        border-right: 1px solid black;
-        border-bottom: 1px solid black;
-        border-collapse: collapse;
-        height: 50px;
-        width: 50px;
-        margin: 0;
-        padding: 0;
-    }
-</style>
+        #game_field {
+            padding: 0;
+            border-spacing: 0;
+            border-top: 1px solid black;
+            border-left: 1px solid black;
+        }
+
+        #game_field tr {
+            padding: 0;
+            margin: 0;
+        }
+
+        #game_field tr td {
+            border-right: 1px solid black;
+            border-bottom: 1px solid black;
+            border-collapse: collapse;
+            height: 50px;
+            width: 50px;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
 </head>
 <body>
 <table id="game_field">
@@ -148,51 +150,72 @@
         <td></td>
     </tr>
 </table>
-<canvas id="canvas" width="500" height="500" style="border: 1px black solid; position: relative; left: 520px; top: -500px"></canvas>
-<p id="status"></p>
+<!--<canvas id="canvas" width="500" height="500" style="border: 1px black solid; position: relative; left: 520px; top: -500px"></canvas>-->
+<p id="status">Waiting for another player...</p>
 <hr>
 <button id="pass_button">PASS</button>
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
-<script src="game.js"></script>
+<!--<script src="../script/game.js"></script>-->
 <script>
-let field = [];
-let rows = document.getElementById('game_field').children.item(0).children;
-for (let i = 0; i < 10; i++) {
-    field[i] = [];
-    let row = rows.item(i).children;
-    for (let j = 0; j < 10; j++) {
-        field[i][j] = row.item(j);
-    }
-}
-let ctx = document.getElementById('canvas').getContext('2d');
-let passButton = document.getElementById('pass_button');
+    const X = 'x';
+    const O = 'o';
+    const EMPTY = '';
+    const X_KILLED = 'O';
+    const O_KILLED = 'X';
+    let socket = io();
 
-let game = new Game(data=>{
-    alert('game ended, data: ' + data);
-    console.log(data)
-});
-
-setInterval(function () {
+    let field = [];
+    let rows = document.getElementById('game_field').children.item(0).children;
     for (let i = 0; i < 10; i++) {
+        field[i] = [];
+        let row = rows.item(i).children;
         for (let j = 0; j < 10; j++) {
-            field[i][j].textContent = game.getField(i, j);
+            field[i][j] = row.item(j);
         }
     }
-}, 250);
+    // let ctx = document.getElementById('canvas').getContext('2d');
+    let passButton = document.getElementById('pass_button');
 
-passButton.onclick = function() {
-    let f = game.pass();
-    console.log(f);
-};
-for (let i = 0; i < 10; i++) {
-    for (let j = 0; j < 10; j++) {
-        field[i][j].onclick = function () {
-            let f = game.turn(i, j);
+    let player = undefined;
+
+    socket.emit('game_html', {});
+
+    socket.on('game_start', data => {
+        player = data.player;
+
+        if (player === X || player === O) {
+            for (let i = 0; i < 10; i++) {
+                for (let j = 0; j < 10; j++) {
+                    
+                }
+            }
         }
-    }
-}
+    });
 
+    // while (player === undefined) {}
+
+    socket.on('game_start', data => {
+        for (let i = 0; i < 10; i++) {
+            for (let j = 0; j < 10; j++) {
+                field[i][j].onclick = () => {
+                    socket.emit('turn', {
+                        row: i,
+                        col: j
+                    })
+                }
+            }
+        }
+
+        socket.on('redraw', data => {
+            for (let i = 0; i < 10; i++) {
+                for (let j = 0; j < 10; j++) {
+                    field[i][j].textContent = data.game.getField(i, j);
+                }
+            }
+        });
+    });
 
 </script>
 </html>
+
