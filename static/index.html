@@ -5,45 +5,35 @@
     <title>Title</title>
 </head>
 <body>
-<button id="button"></button>
-<p id="status"></p>
+<a href="/game.html"><button id="button">BUTTON</button></a>
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
-<script src="../script/server/server.js"></script>
 <script>
-    // window.location.replace('game.html');
     let socket = io();
 
-    let status = document.getElementById('status');
     let button = document.getElementById('button');
 
-    socket.on('tick', function (data) {
+    socket.emit('index_html', {});
+
+    socket.on('game_status', data => {
         switch (data.activePlayers) {
             case 0:
                 button.textContent = 'Host game';
-                button.onclick = function () {
-                    socket.emit('host_game', {});
-                    status.textContent = 'Waiting for another player';
-                };
-                socket.on('redirect_to_game', function () {
-                    window.location.replace('/game.html');
-                });
                 break;
             case 1:
                 button.textContent = 'Join game';
-                button.onclick = function () {
-                    socket.emit('join_game', {});
-                    status.textContent = 'Connecting...';
-                };
                 break;
             case 2:
                 button.textContent = 'Spectate';
-                button.onclick
                 break;
         }
-        button.onclick = function () {
-            window.location.replace('/game.html');
-        };
+        button.onclick = () => {
+            socket.emit('index_html_leave', {});
+        }
+    });
+
+    window.addEventListener('beforeunload', function (e) {
+        socket.emit('index_html_leave', {});
     });
 
 </script>

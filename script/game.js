@@ -8,6 +8,9 @@ const EMPTY = '';
 function Game(gameEndedCallback) {
     // API
     this.turn = function(row, col) {
+        if (gameEnded) {
+            return false;
+        }
         let enemy = currentPlayer === X ? O : X;
         let killed = enemy === X ? X_KILLED : O_KILLED;
         if (isAvailable(currentPlayer, row, col)) {
@@ -23,6 +26,9 @@ function Game(gameEndedCallback) {
     };
 
     this.pass = function () {
+        if (gameEnded) {
+            return false;
+        }
         if (subTurnCount !== 0) {
             return false;
         }
@@ -32,7 +38,11 @@ function Game(gameEndedCallback) {
     };
 
     this.getField = function(row, col) {
-        return field[row][col];
+        if (row && col) {
+            return getField(row, col);
+        } else {
+            return field;
+        }
     };
 
     this.getCurrentPlayer = function () {
@@ -47,21 +57,25 @@ function Game(gameEndedCallback) {
         return endTime;
     };
 
+    this.isEnded = function() {
+        return gameEnded;
+    };
+
+    // Helper methods
     // Update field
     let setField = function(row, col, e) {
-        if (gameEnded) {
-            return;
-        }
         switch (getField(row, col)) {
             case X:
                 xCount -= 1;
                 if (xCount === 0) {
+                    field[row][col] = e;
                     endGame(O);
                 }
                 break;
             case O:
                 oCount -= 1;
                 if (oCount === 0) {
+                    field[row][col] = e;
                     endGame(X);
                 }
                 break;
@@ -143,10 +157,10 @@ function Game(gameEndedCallback) {
     };
 
     let endTurn = function(isPass) {
+        turnCount += 1;
         if (lastTurnPass && isPass) {
             endGame(EMPTY); // Draw
         }
-        turnCount += 1;
         subTurnCount = 0;
         lastTurnPass = isPass;
         currentPlayer = currentPlayer === X ? O : X;
@@ -163,6 +177,7 @@ function Game(gameEndedCallback) {
         });
     };
 
+    // Returns array of indexes placed around [row, col]
     let aroundIndexes = function(row, col) {
         let inx = [];
         inx[0] = [row - 1, col - 1];
@@ -182,6 +197,7 @@ function Game(gameEndedCallback) {
         return res;
     };
 
+    // Build paths for player
     let buildGraph = function(player, graph) {
         let killed = player === X ? O_KILLED : X_KILLED;
 
@@ -207,6 +223,7 @@ function Game(gameEndedCallback) {
         return graph;
     };
 
+    // A* algorithm
     let findPath = function(graph, start, end) {
         function h(start, end) {
             let startI = start / 10;

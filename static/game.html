@@ -24,6 +24,8 @@
             width: 50px;
             margin: 0;
             padding: 0;
+            text-align: center;
+            font-size: 40px;
         }
     </style>
 </head>
@@ -150,13 +152,13 @@
         <td></td>
     </tr>
 </table>
-<!--<canvas id="canvas" width="500" height="500" style="border: 1px black solid; position: relative; left: 520px; top: -500px"></canvas>-->
-<p id="status">Waiting for another player...</p>
 <hr>
 <button id="pass_button">PASS</button>
+<p id="status">Waiting for another player...</p>
+<hr>
+<a href="/index.html"><button>EXIT</button></a>
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
-<!--<script src="../script/game.js"></script>-->
 <script>
     const X = 'x';
     const O = 'o';
@@ -174,8 +176,42 @@
             field[i][j] = row.item(j);
         }
     }
-    // let ctx = document.getElementById('canvas').getContext('2d');
+
+    function drawField(f) {
+        for (let i = 0; i < 10; i++) {
+            for (let j = 0; j < 10; j++) {
+                if (f[i][j] === X_KILLED || f[i][j] === O_KILLED) {
+                    field[i][j].style.backgroundColor = "red";
+                }
+                switch (f[i][j]) {
+                    case X:
+                    case X_KILLED:
+                        field[i][j].textContent = 'X';
+                        break;
+                    case O:
+                    case O_KILLED:
+                        field[i][j].textContent = 'O';
+                        break;
+                }
+            }
+        }
+    }
+
+    function redraw(data) {
+        drawField(data.field);
+        if (player !== EMPTY) {
+            if (player !== data.currentPlayer) {
+                status.textContent = 'Enemy\'s turn';
+            } else {
+                status.textContent = 'Your turn';
+            }
+        } else {
+            status.textContent = data.currentPlayer.toUpperCase() + '\'s turn';
+        }
+    }
+
     let passButton = document.getElementById('pass_button');
+    let status = document.getElementById('status');
 
     let player = undefined;
 
@@ -187,33 +223,52 @@
         if (player === X || player === O) {
             for (let i = 0; i < 10; i++) {
                 for (let j = 0; j < 10; j++) {
-                    
+                    field[i][j].onclick = function () {
+                        socket.emit('turn', {
+                            row: i,
+                            col: j
+                        });
+                    }
                 }
             }
+            passButton.onclick = function () {
+                socket.emit('pass', {});
+            };
+            if (player === X) {
+                status.textContent = 'Your turn';
+            } else {
+                status.textContent = 'Enemy\' turn';
+            }
+        } else {
+            status.textContent = 'Spectating';
+            passButton.hidden = true;
+            redraw(data);
         }
     });
 
-    // while (player === undefined) {}
+    socket.on('redraw', redraw);
 
-    socket.on('game_start', data => {
+    socket.on('game_over', data => {
         for (let i = 0; i < 10; i++) {
             for (let j = 0; j < 10; j++) {
-                field[i][j].onclick = () => {
-                    socket.emit('turn', {
-                        row: i,
-                        col: j
-                    })
-                }
+                field[i][j].onclick = () => {};
             }
         }
+        drawField(data.field);
+        passButton.onclick = () => {};
+        if (data.winner === EMPTY) {
+            status.textContent = 'Draw';
+        } else if (player === EMPTY) {
+            status.textContent = 'Winner: ' + data.winner.toUpperCase();
+        } else if (player === data.winner) {
+            status.textContent = 'Win!';
+        } else {
+            status.textContent = 'Lose :(';
+        }
+    });
 
-        socket.on('redraw', data => {
-            for (let i = 0; i < 10; i++) {
-                for (let j = 0; j < 10; j++) {
-                    field[i][j].textContent = data.game.getField(i, j);
-                }
-            }
-        });
+    socket.on('redirect_home', () => {
+        window.location.replace('/index.html');
     });
 
 </script>
