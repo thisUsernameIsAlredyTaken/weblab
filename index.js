@@ -1,9 +1,20 @@
 const SERVER_PORT = 2000;
+const DB_PORT = 27017;
+const DB_NAME = 'virwar';
+const DB_COLLECTION_NAME = 'gamesessions';
+const DB_URL = 'mongodb://127.0.0.1:' + DB_PORT + '/' + DB_NAME;
 
 const http = require('http');
 const express = require('express');
 const socketIo = require('socket.io');
 const {Game, X, O, EMPTY} = require('./script/game.js');
+const mongoose = require('mongoose');
+
+const GameSession = mongoose.model('GameSession', {
+    starttime: Date,
+    endtime: Date,
+    winner: String
+});
 
 let app = express();
 let server = http.Server(app);
@@ -64,6 +75,20 @@ io.sockets.on('connection', function (socket) {
                 players[O].socket = socket;
                 sockets.push(socket);
                 game = new Game(data => {
+                    try {
+                        mongoose.connect(DB_URL, {useNewUrlParser: true, useUnifiedTopology: true});
+                        let gs = new GameSession({
+                            starttime: data.startTime,
+                            endtime: data.endTime,
+                            winner: data.winner
+                        });
+                        gs.save().then(() => {
+                            mongoose.disconnect();
+                        });
+                    } catch (e) {
+                        console.log(e);
+                        mongoose.disconnect();
+                    }
                     data.field = game.getField();
                     sockets.forEach(sock => {
                         gameOverData = data;
@@ -115,6 +140,23 @@ io.sockets.on('connection', function (socket) {
                     currentPlayer: game.getCurrentPlayer()
                 });
             });
+        }
+    });
+
+    socket.on('stat_html', () => {
+        try {
+            mongoose.connect(DB_URL, {useNewUrlParser: true, useUnifiedTopology: true});
+            GameSession.find({}, 'starttime endtime winner', function (err, gs) {
+                if (err) {
+                    throw err;
+                }
+                socket.emit('stat', {gs: gs});
+                mongoose.disconnect();
+            });
+        } catch (e) {
+            console.log(e);
+            socket.emit('stat', {gs: null});
+            mongoose.disconnect();
         }
     });
 

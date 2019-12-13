@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        table {
+            border: 1px black solid;
+        }
+        table tbody tr td {
+            border-right: 1px solid black;
+            border-bottom: 1px solid black;
+        }
+        table tbody tr
+    </style>
+</head>
+<body>
+<h1>Statistic</h1>
+<a href="/index.html"><button>Home</button></a>
+<table>
+    <col width="250">
+    <col width="250">
+    <col width="250">
+    <thead>
+    <tr>
+        <th>Starts</th>
+        <th>Duration</th>
+        <th>Winner</th>
+    </tr>
+    </thead>
+    <tbody id="table_body"></tbody>
+</table>
+<ul id="list">
+</ul>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
+<script>
+    let socket = io();
+
+    let list = document.getElementById('list');
+    let table = document.getElementById('table_body');
+
+    function formatDate(ms) {
+        let str;
+        let d = new Date(ms);
+        let sc = d.getUTCSeconds().toString();
+        let mn = d.getUTCMinutes().toString();
+        let hr = d.getUTCHours().toString();
+
+        sc = ('0' + sc).slice(-2);
+        mn = ('0' + mn).slice(-2);
+        hr = ('0' + hr).slice(-2);
+
+        return hr + ':' + mn + ':' + sc;
+    }
+
+    socket.emit('stat_html', {});
+
+    socket.on('stat', data => {
+        if (data.gs === null) {
+
+        } else {
+            data.gs.forEach(g => {
+                let tr = document.createElement('tr');
+                let tdStart = document.createElement('td');
+                let tdDuration = document.createElement('td');
+                let tdWinner = document.createElement('td');
+                tdStart.appendChild(document.createTextNode((new Date(g.starttime)).toLocaleString()));
+                tdDuration.appendChild(document.createTextNode(   formatDate(new Date(new Date(g.endtime)  - new Date(g.starttime)).getTime())  ));
+                tdWinner.appendChild(document.createTextNode(g.winner === '' ? 'Draw' : g.winner === 'x' ? 'X' : 'O'));
+                tr.appendChild(tdStart);
+                tr.appendChild(tdDuration);
+                tr.appendChild(tdWinner);
+                table.appendChild(tr);
+                // let li = document.createElement('li');
+                // li.appendChild(document.createTextNode(new Date(g.starttime).toLocaleString()));
+                // let subLi1 = document;
+                // list.appendChild(li);
+            });
+        }
+    });
+</script>
+</html>

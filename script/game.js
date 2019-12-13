@@ -167,7 +167,7 @@ function Game(gameEndedCallback) {
     };
 
     let endGame = function(winner) {
-        endTime = Date.now();
+        endTime = new Date(Date.now());
         gameEnded = true;
         gameEndedCallback({
             winner: winner,
@@ -266,7 +266,7 @@ function Game(gameEndedCallback) {
         return false;
     };
 
-    let startTime = Date.now();
+    let startTime = new Date(Date.now());
     let endTime = undefined;
     let gameEnded = false;
     let lastTurnPass = false;
