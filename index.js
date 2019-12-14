@@ -7,8 +7,8 @@ const DB_URL = 'mongodb://127.0.0.1:' + DB_PORT + '/' + DB_NAME;
 const http = require('http');
 const express = require('express');
 const socketIo = require('socket.io');
-const {Game, X, O, EMPTY} = require('./script/game.js');
 const mongoose = require('mongoose');
+const {Game, X, O, EMPTY} = require('./script/game.js');
 
 const GameSession = mongoose.model('GameSession', {
     starttime: Date,
