@@ -9,7 +9,7 @@
   "author": "Zhivaev Artem",
   "license": "ISC",
   "dependencies": {
-    "express": "4.17.1",
+    "express": "4.19.2",
     "mongoose": "5.8.1",
     "socket.io": "2.3.0"
   }
